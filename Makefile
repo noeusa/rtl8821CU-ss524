@@ -1209,6 +1209,8 @@ EXTRA_CFLAGS += -DDM_ODM_SUPPORT_TYPE=0x04
 ifeq ($(CONFIG_PLATFORM_I386_PC), y)
 EXTRA_CFLAGS += -DCONFIG_LITTLE_ENDIAN
 EXTRA_CFLAGS += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+# device kernel has CONFIG_WEXT_PRIV=y (get_wireless_stats reads handlers+0x14)
+EXTRA_CFLAGS += -DCONFIG_WEXT_PRIV
 SUBARCH := $(shell uname -m | sed -e "s/armv.*/arm/" | sed -e "s/aarch64/arm64/" | sed -e s/i.86/i386/)
 ARCH ?= $(SUBARCH)
 CROSS_COMPILE ?=
