@@ -1,0 +1,44 @@
+--- a/arch/arm/include/asm/device.h
++++ b/arch/arm/include/asm/device.h
+@@ -19,6 +19,11 @@
+ #ifdef CONFIG_XEN
+ 	const struct dma_map_ops *dev_dma_ops;
+ #endif
++	/* ABI-PAD: target device kernel (SS524V100 4.19.90) has 4 extra bytes
++	 * in struct dev_archdata, making struct device 408 not 400; see
++	 * abi-probe/abi-fix.patch. Without it every field from of_node on is
++	 * 4 bytes off (usb_device.actconfig 0x224 vs 0x22c) -> Oops. */
++	unsigned int abi_pad;
+ 	unsigned int dma_coherent:1;
+ 	unsigned int dma_ops_setup:1;
+ };
+--- a/net/Kconfig
++++ b/net/Kconfig
+@@ -279,9 +279,11 @@
+ 
+ config BQL
+ 	bool
++	# ABI(#63): device kernel built netdev_queue WITHOUT dql (sizeof=128 from
++	# alloc_netdev_mqs lsl#7). BQL adds struct dql to netdev_queue -> 192/256.
++	default n
+ 	depends on SYSFS
+ 	select DQL
+-	default y
+ 
+ config BPF_JIT
+ 	bool "enable BPF Just In Time compiler"
+--- a/net/wireless/Kconfig
++++ b/net/wireless/Kconfig
+@@ -1,5 +1,6 @@
+ config WIRELESS_EXT
+-	bool
++	bool "Enable WEXT (probe)"
++	default y
+ 
+ config WEXT_CORE
+ 	def_bool y
+--- a/.config
++++ b/.config
+@@ CONFIG_NR_CPUS: match real device kernel (4 CPUs) — ABI#5 fix @@
+-CONFIG_NR_CPUS=16
++CONFIG_NR_CPUS=4
